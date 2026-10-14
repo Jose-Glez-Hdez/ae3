@@ -48,8 +48,12 @@ Con esto generamos el certificado y copiamos el certificado público en el direc
 
 ## 5. Crear el usuario de la galería
 
+Con los siguientes comandos crearemos el usuario que nos pedirá cuando accedamos a la galería:
+
 ```bash
 echo "alumno:$(openssl passwd -apr1 CAMBIAR_ESTO)" | tee /etc/nginx/htpasswd-images
 chown root:www-data /etc/nginx/htpasswd-images
 chmod 640 /etc/nginx/htpasswd-images
 ```
+
+**RECUERDA CAMBIAR LA CONTRASEÑA**
