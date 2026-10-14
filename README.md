@@ -57,3 +57,83 @@ chmod 640 /etc/nginx/htpasswd-images
 ```
 
 **RECUERDA CAMBIAR LA CONTRASEÑA**
+
+## 6. Crear o modificar el archivo de configuración de Nginx
+
+Modificaremos o crearemos el archivo /etc/nginx/sites-available/010-images.alumno.local con el siguiente contenido:
+
+```
+# Listas blancas: un valor no listado usa el default
+map $arg_size $img_size {
+    default 300;
+    150     150;
+    300     300;
+    600     600;
+}
+
+map $arg_sharpen $img_sharpen {
+    default 0;
+    0       0;
+    30      30;
+    60      60;
+    100     100;
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    server_name images.alumno.local;
+    root /var/www/images.alumno.local;
+    index index.html;
+
+    ssl_certificate     /etc/ssl/dpl/images.alumno.local.crt;
+    ssl_certificate_key /etc/ssl/dpl/images.alumno.local.key;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+    # image_filter SOLO aquí
+    location /img/ {
+        auth_basic "Galeria de imagenes";
+        auth_basic_user_file /etc/nginx/htpasswd-images;
+
+        # Sin esto, image_filter convierte el 401 en un 415
+        error_page 401 @sin_autorizacion;
+
+        image_filter resize $img_size $img_size;
+        image_filter_sharpen $img_sharpen;
+        image_filter_buffer 5M;
+    }
+
+    location @sin_autorizacion {
+        return 401;
+    }
+
+    access_log /var/log/nginx/images-alumno.access.log;
+    error_log  /var/log/nginx/images-alumno.error.log;
+}
+
+# HTTP -> HTTPS
+server {
+    listen 80;
+    listen [::]:80;
+    server_name images.alumno.local;
+    return 301 https://$host$request_uri;
+}
+
+# www -> dominio base
+server {
+    listen 80;
+    listen [::]:80;
+    server_name www.images.alumno.local;
+    return 301 https://images.alumno.local$request_uri;
+}
+```
+
+Generamos el enlace simbólico en /etc/nginx/sites-enabled/, y reiniciamos el servicio de Nginx:
+
+```bash
+ln -s /etc/nginx/sites-available/010-images.alumno.local /etc/nginx/sites-enabled/
+nginx -t && systemctl reload nginx
+```
