@@ -1,0 +1,115 @@
+# Comprobaciones AE3
+
+## nginx -t
+```
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+```
+
+## nginx -T (filtrado)
+```
+	# server_names_hash_bucket_size 64;
+	# server_name_in_redirect off;
+load_module modules/ngx_http_image_filter_module.so;
+    server_name images.alumno.local;
+    # image_filter SOLO aquí
+        auth_basic "Galeria de imagenes";
+        auth_basic_user_file /etc/nginx/htpasswd-images;
+        image_filter resize $img_size $img_size;
+        image_filter_sharpen $img_sharpen;
+        image_filter_buffer 5M;
+    server_name images.alumno.local;
+    server_name www.images.alumno.local;
+    server_name 188.245.155.48; 
+```
+
+## nginx -V | grep image_filter
+```
+image_filter_module=dynamic
+```
+
+## 200 en la pagina
+```
+HTTP/1.1 200 OK
+Server: nginx/1.28.3 (Ubuntu)
+Date: Wed, 14 Oct 2026 12:08:09 GMT
+Content-Type: text/html
+Content-Length: 1349
+Last-Modified: Wed, 14 Oct 2026 11:46:15 GMT
+Connection: keep-alive
+ETag: "6acf6b87-545"
+Accept-Ranges: bytes
+
+```
+
+## 401 sin credenciales
+```
+HTTP/1.1 401 Unauthorized
+Server: nginx/1.28.3 (Ubuntu)
+Date: Wed, 14 Oct 2026 12:08:09 GMT
+Content-Type: text/html
+Content-Length: 188
+Connection: keep-alive
+WWW-Authenticate: Basic realm="Galeria de imagenes"
+
+```
+
+## 200 con credenciales + identify (150)
+```
+HTTP 200
+/tmp/ae3.jpg JPEG 150x150 150x150+0+0 8-bit sRGB 2232B 0.000u 0:00.000
+```
+
+## valor no listado -> default 300
+```
+/tmp/def.jpg JPEG 300x300 300x300+0+0 8-bit sRGB 4766B 0.000u 0:00.000
+```
+
+## 301 www
+```
+HTTP/1.1 301 Moved Permanently
+Server: nginx/1.28.3 (Ubuntu)
+Date: Wed, 14 Oct 2026 12:08:09 GMT
+Content-Type: text/html
+Content-Length: 178
+Connection: keep-alive
+Location: https://images.alumno.local/
+
+```
+
+## 301 http->https
+```
+HTTP/1.1 301 Moved Permanently
+Server: nginx/1.28.3 (Ubuntu)
+Date: Wed, 14 Oct 2026 12:08:09 GMT
+Content-Type: text/html
+Content-Length: 178
+Connection: keep-alive
+Location: https://images.alumno.local/
+
+```
+
+## goaccess (JSON)
+```
+ [K[PARSING /var/log/nginx/images-alumno.access.log] {0} @ {0/s}
+Cleaning up resources...
+{"general": {"start_date": "14/Oct/2026","end_date": "14/Oct/2026","date_time": "2026-10-14 12:08:09 +0000","total_requests": 50,"valid_requests": 50,"failed_requests": 0,"generation_time": 1,"unique_visitors": 2,"unique_files": 24,"excluded_hits": 0,"unique_referrers": 0,"unique_not_found": 1,"unique_static_files": 3,"log_size": 10724,"bandwidth": 153861,"log_path": ["\/var\/log\/nginx\/images-al
+```
+
+## git log --oneline
+```
+c5200b7 Docs: added the instructions to create the conf file of Nginx
+4abae23 Feat: was created the configuration file of nginx
+a815301 Docs: added the instructions to create a gallery user
+9d00d94 Docs: added the instructions to generate the autosigned cert
+35f2065 Feat: was added the public certificate and README about that
+9140e9b Docs: added on README the instruction to publish web files
+230e4d6 Feat: was added the web files html, css and js
+3c41ea5 Docs: was added the instructions on README for generate the images
+d296d53 Initial: initial commit with initial readme.md
+```
+
+## autoria
+```
+José Manuel González Hernández <jose.glez.hdez@icloud.com>
+```
