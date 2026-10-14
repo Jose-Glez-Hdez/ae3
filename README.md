@@ -45,3 +45,11 @@ cp /etc/ssl/dpl/images.alumno.local.crt ~/dpl/ae3/certs/
 ```
 
 Con esto generamos el certificado y copiamos el certificado público en el directorio certs de nuestra carpeta raíz.
+
+## 5. Crear el usuario de la galería
+
+```bash
+echo "alumno:$(openssl passwd -apr1 CAMBIAR_ESTO)" | tee /etc/nginx/htpasswd-images
+chown root:www-data /etc/nginx/htpasswd-images
+chmod 640 /etc/nginx/htpasswd-images
+```
