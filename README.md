@@ -28,3 +28,20 @@ Creamos dentro del directorio web los siguientes archivos: index.html, estilos.c
 cp web/{index.html,app.js,estilos.css} /var/www/images.alumno.local/
 chmod -R a+rX /var/www/images.alumno.local
 ```
+
+## 4. Generación de certificado autofirmado
+
+Realizamos los siguientes comandos:
+
+```bash
+mkdir -p /etc/ssl/dpl
+openssl req -x509 -nodes -newkey rsa:2048 -days 365 \
+  -keyout /etc/ssl/dpl/images.alumno.local.key \
+  -out /etc/ssl/dpl/images.alumno.local.crt \
+  -subj "/CN=images.alumno.local" \
+  -addext "subjectAltName=DNS:images.alumno.local,DNS:www.images.alumno.local"
+chmod 400 /etc/ssl/dpl/images.alumno.local.key
+cp /etc/ssl/dpl/images.alumno.local.crt ~/dpl/ae3/certs/
+```
+
+Con esto generamos el certificado y copiamos el certificado público en el directorio certs de nuestra carpeta raíz.
